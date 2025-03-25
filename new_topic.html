@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создать тему - Рыбалка</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Рыбалка</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="news.html">Новости</a></li>
+                    <li><a href="fishing_spots.html">Места для рыбалки</a></li>
+                    <li><a href="tackle_baits.html">Снасти и приманки</a></li>
+                    <li><a href="beginners_tips.html">Советы начинающим</a></li>
+                    <li><a href="forum.html">Форум</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="new-topic-section">
+            <div class="container">
+                <h2>Создать новую тему</h2>
+                <form class="topic-form" id="newTopicForm">
+                    <div class="form-group">
+                        <label for="category">Выберите категорию</label>
+                        <select id="category" name="category" required>
+                            <option value="">Выберите категорию</option>
+                            <option value="general">Общие обсуждения</option>
+                            <option value="technique">Техника ловли</option>
+                            <option value="tackle">Снасти и приманки</option>
+                            <option value="spots">Места для рыбалки</option>
+                            <option value="reports">Отчеты о рыбалке</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="title">Заголовок темы</label>
+                        <input type="text" id="title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="content">Содержание темы:</label>
+                        <textarea id="content" name="content" rows="10" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="image">Изображение (необязательно):</label>
+                        <input type="url" id="image" name="image" placeholder="Вставьте URL изображения">
+                        <small class="form-text">Рекомендуемый размер: 1200x800 пикселей</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="tags">Теги (через запятую)</label>
+                        <input type="text" id="tags" name="tags" placeholder="например: спиннинг, щука, весна">
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="subscribe" checked>
+                            Подписаться на тему
+                        </label>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="submit-button">Создать тему</button>
+                        <a href="forum.html" class="cancel-button">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Рыбалка. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('newTopicForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Проверяем авторизацию
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                alert('Для создания темы необходимо войти в систему');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Получаем данные формы
+            const category = document.getElementById('category').value;
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            const image = document.getElementById('image').value;
+            const tags = document.getElementById('tags').value.split(',').map(tag => tag.trim());
+            const subscribe = document.querySelector('input[name="subscribe"]').checked;
+
+            // Создаем объект темы
+            const topic = {
+                id: Date.now(),
+                category,
+                title,
+                content,
+                image,
+                tags,
+                author: currentUser.username,
+                authorId: currentUser.id,
+                date: new Date().toISOString(),
+                replies: [],
+                rating: 0,
+                ratedBy: []
+            };
+
+            // Получаем существующие темы или создаем пустой массив
+            let topics = JSON.parse(localStorage.getItem('forumTopics') || '[]');
+            
+            // Добавляем новую тему
+            topics.push(topic);
+            
+            // Сохраняем обновленный список тем
+            localStorage.setItem('forumTopics', JSON.stringify(topics));
+
+            // Если пользователь подписался на тему, сохраняем подписку
+            if (subscribe) {
+                let userSubscriptions = JSON.parse(localStorage.getItem('userSubscriptions') || '{}');
+                if (!userSubscriptions[currentUser.id]) {
+                    userSubscriptions[currentUser.id] = [];
+                }
+                userSubscriptions[currentUser.id].push(topic.id);
+                localStorage.setItem('userSubscriptions', JSON.stringify(userSubscriptions));
+            }
+
+            // Перенаправляем на страницу форума
+            alert('Тема успешно создана!');
+            window.location.href = 'forum.html';
+        });
+    </script>
+</body>
+</html> 
